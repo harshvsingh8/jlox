@@ -1,2 +1,7 @@
 # jlox
-test change
+
+## Build
+make 
+
+## Run
+make run

@@ -17,6 +17,7 @@ SRCS := $(SRC_DIR)/TokenType.java \
 	$(SRC_DIR)/Lox.java \
 	$(SRC_DIR)/Expr.java \
 	$(SRC_DIR)/AstPrinter.java \
+	$(SRC_DIR)/Parser.java \
 
 ##
 # classes

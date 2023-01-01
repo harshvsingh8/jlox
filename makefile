@@ -2,20 +2,21 @@
 # source directory
 ##
 SRC_DIR := com/craftinginterpreters/lox
-
 ##
 # output directory
 ##
 OUT_DIR := out
 
 ##
-# sources
+# psources
 ##
 ## SRCS := $(wildcard $(SRC_DIR)/*.java)
 SRCS := $(SRC_DIR)/TokenType.java \
 	$(SRC_DIR)/Token.java \
 	$(SRC_DIR)/Scanner.java \
-	$(SRC_DIR)/Lox.java
+	$(SRC_DIR)/Lox.java \
+	$(SRC_DIR)/Expr.java \
+	$(SRC_DIR)/AstPrinter.java \
 
 ##
 # classes
@@ -58,6 +59,18 @@ $(CLS): $(OUT_DIR)/%.class: $(SRC_DIR)/%.java
 ##
 clean:
 	rm $(OUT_DIR)/*.class
+
+##
+# Genertate Ast tool
+##
+build_gast:
+	$(JC) $(JCFLAGS) com/craftinginterpreters/tool/GenerateAst.java
+
+##
+# Run gast
+##
+run_gast:
+	$(JVM) -cp $(OUT_DIR) com.craftinginterpreters.tool.GenerateAst $(SRC_DIR)
 
 ##
 # Run JLox

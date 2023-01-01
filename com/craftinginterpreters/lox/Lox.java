@@ -20,6 +20,7 @@ public class Lox {
             runFile(args[0]);
         } else {
             runPrompt();
+            // runAstPrinter();
         }
     }
 
@@ -40,6 +41,15 @@ public class Lox {
             run(line);
             // System.exit(65);
         }
+    }
+
+    // Test Ast Printer to check that the auto-gen ast classes are set correctly.
+    private static void runAstPrinter() {
+        Expr expression = new Expr.Binary(
+            new Expr.Unary(new Token(TokenType.MINUS, "-", null, 1), new Expr.Literal(123)),
+            new Token(TokenType.STAR, "*", null, 1),
+            new Expr.Grouping(new Expr.Literal(42.42)));
+        System.out.println(new AstPrinter().print(expression));
     }
 
     private static void run(String source) {

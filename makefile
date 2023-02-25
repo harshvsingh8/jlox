@@ -19,7 +19,8 @@ SRCS := $(SRC_DIR)/TokenType.java \
 	$(SRC_DIR)/AstPrinter.java \
 	$(SRC_DIR)/Parser.java \
 	$(SRC_DIR)/Interpreter.java \
-	$(SRC_DIR)/RuntimeError.java 	
+	$(SRC_DIR)/RuntimeError.java \
+	$(SRC_DIR)/Stmt.java
 
 ##
 # classes

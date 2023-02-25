@@ -4,14 +4,29 @@ import com.craftinginterpreters.lox.Expr.Binary;
 import com.craftinginterpreters.lox.Expr.Grouping;
 import com.craftinginterpreters.lox.Expr.Literal;
 import com.craftinginterpreters.lox.Expr.Unary;
+import com.craftinginterpreters.lox.Stmt.Expression;
+import com.craftinginterpreters.lox.Stmt.Print;
+
 import static com.craftinginterpreters.lox.TokenType.*;
 
-public class Interpreter implements Expr.Visitor<Object> {
+import java.util.List;
+
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     public void interpret(Expr expression) {
         try {
             Object value = this.evaluate(expression);
             System.out.println(this.stringify(value));
+        } catch (RuntimeError error)    {
+            Lox.runtimeError(error);
+        }
+    }
+
+    public void interpret(List<Stmt> statements) {
+        try {
+            for(Stmt statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error)    {
             Lox.runtimeError(error);
         }
@@ -83,9 +98,27 @@ public class Interpreter implements Expr.Visitor<Object> {
 
         return null;
     }
-    
+
+    // Statement 
+    @Override
+    public Void visitExpressionStmt(Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrintStmt(Print stmt) {
+        Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
     private Object evaluate(Expr expr) {
         return expr.accept(this);
+    }
+
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
     }
 
     private boolean isTruthy(Object object) {

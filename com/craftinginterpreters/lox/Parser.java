@@ -9,9 +9,11 @@ public class Parser {
 
     private final List<Token> tokens;
     private int current = 0;
+    private boolean repl;
 
-    Parser(List<Token> tokens) {
+    Parser(List<Token> tokens, boolean repl) {
         this.tokens = tokens;
+        this.repl = repl;
     }
 
     List<Stmt> parse() {
@@ -34,13 +36,20 @@ public class Parser {
 
     private Stmt statement() {
         if(match(PRINT)) return printStatement();
+        if(match(LEFT_BRACE)) return new Stmt.Block(block());
         return expressionStatement();
     }
 
     private Stmt expressionStatement() {
         Expr expr = expression();
-        consume(SEMICOLON, "Expect ';' after expression.");
-        return new Stmt.Expression(expr);
+        if(!repl) {
+            consume(SEMICOLON, "Expect ';' after expression.");
+            return new Stmt.Expression(expr);
+        } else {
+            // Allow once 
+            repl = false;
+            return new Stmt.Print(expr);
+        }
     }
 
     private Stmt printStatement() {
@@ -49,6 +58,17 @@ public class Parser {
         return new Stmt.Print(value);
     }
 
+    private List<Stmt> block() {
+        List<Stmt> statements = new ArrayList<Stmt>();
+
+        while(!check(RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(declaration());
+        }
+
+        consume(RIGHT_BRACE, "Expect '}' after block statement");
+        return statements;
+    }
+    
     private Stmt varDeclaration() {
         Token name = consume(IDENTIFIER, "Expect variable name.");
 

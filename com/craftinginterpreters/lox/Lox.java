@@ -6,7 +6,11 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static com.craftinginterpreters.lox.TokenType.*;
 
 public class Lox {
 
@@ -24,13 +28,12 @@ public class Lox {
             runFile(args[0]);
         } else {
             runPrompt();
-            // runAstPrinter();
         }
     }
 
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
-        run(new String(bytes, Charset.defaultCharset()));
+        run(new String(bytes, Charset.defaultCharset()), false);
         if(hadError) System.exit(65);
         if(hadRuntimeError) System.exit(65);
     }
@@ -43,7 +46,7 @@ public class Lox {
             System.out.print("> ");
             String line = reader.readLine();
             if(line == null || line.isEmpty()) break;
-            run(line);
+            run(line, true);
         }
     }
 
@@ -56,16 +59,14 @@ public class Lox {
         System.out.println(new AstPrinter().print(expression));
     }
 
-    private static void run(String source) {
+    private static void run(String source, boolean repl) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
-        Parser parser = new Parser(tokens);
-        
-        // Expr  expr = parser.parse();
+        Parser parser = new Parser(tokens, repl);
         List<Stmt> statements = parser.parse();
         if(hadError) return;
         interpreter.interpret(statements);
-        
+            
         // Prints the AST tree.
         // System.out.println(new AstPrinter().print(expr));
         // interpreter.interpret(expr);

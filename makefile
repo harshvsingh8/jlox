@@ -81,4 +81,4 @@ run_gast:
 # Run JLox
 ##
 run:
-	$(JVM) -cp $(OUT_DIR) com.craftinginterpreters.lox.Lox
+	$(JVM) -cp $(OUT_DIR) com.craftinginterpreters.lox.Lox $(src)

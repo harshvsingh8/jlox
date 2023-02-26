@@ -46,6 +46,7 @@ public enum TokenType {
     TRUE,
     VAR,
     WHILE,
+    BREAK,
 
     // End.
     EOF

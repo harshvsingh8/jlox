@@ -32,6 +32,7 @@ class Scanner {
         
         keywords.put("while", TokenType.WHILE);
         keywords.put("for", TokenType.FOR);
+        keywords.put("break", TokenType.BREAK);
 
         keywords.put("var", TokenType.VAR);
         keywords.put("return", TokenType.RETURN);

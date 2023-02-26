@@ -13,6 +13,7 @@ import com.craftinginterpreters.lox.Stmt.Print;
 import com.craftinginterpreters.lox.Stmt.Var;
 import com.craftinginterpreters.lox.Stmt.If;
 import com.craftinginterpreters.lox.Stmt.While;
+import com.craftinginterpreters.lox.Stmt.Break;
 
 import static com.craftinginterpreters.lox.TokenType.*;
 
@@ -20,7 +21,10 @@ import java.util.List;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
+    private static class LoopExitJump extends RuntimeException {}
+    
     private Environment environment = new Environment();
+    private int loopDepth = 0;
     
     public void interpret(Expr expression) {
         try {
@@ -82,6 +86,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             case BANG_EQUAL:
                 return !this.isEqual(left, right);
         }
+        
         return null;
     }
 
@@ -124,10 +129,17 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(While stmt) {
+        loopDepth++;
+
         while(isTruthy(evaluate(stmt.condition))) {
-            execute(stmt.body);
+            try {
+                execute(stmt.body);
+            } catch(LoopExitJump lej) {
+                break;
+            }
         }
 
+        loopDepth--;
         return null;
     }
 
@@ -235,6 +247,15 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return null;
     }
 
+    @Override
+    public Void visitBreakStmt(Break stmt) {
+        if(loopDepth == 0) {
+            throw new RuntimeError(stmt.token, "Encountered 'break' without enclosing loop.");
+        }
+
+        throw new LoopExitJump();
+    }
+    
     void executeBlock(List<Stmt> statements,
                       Environment environment) {
         Environment previous = this.environment;

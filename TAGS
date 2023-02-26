@@ -1,0 +1,243 @@
+
+/home/harsh/github/jlox/com/craftinginterpreters/lox/Environment.java,269
+class Environment 6,88
+    private final Map<Map8,109
+    private final Map<String, Object> values 8,109
+    private final Environment enclosing;10,174
+    Environment(12,216
+    Environment(16,269
+    void 20,357
+    Object get(24,442
+    void assign(34,739
+
+/home/harsh/github/jlox/com/craftinginterpreters/lox/AstPrinter.java,400
+public class AstPrinter 11,388
+    String print(13,447
+    public String visitBinaryExpr(18,532
+    public String visitGroupingExpr(23,681
+    public String visitLiteralExpr(28,815
+    public String visitUnaryExpr(34,970
+    private String parenthesize(38,1087
+    public String visitVariableExpr(51,1454
+    public String visitAssignExpr(57,1664
+    public String visitLogicalExpr(63,1868
+
+/home/harsh/github/jlox/com/craftinginterpreters/lox/Token.java,189
+class Token 3,39
+    final TokenType type;4,53
+    final String lexeme;5,79
+    final Object literal;6,104
+    final int line;7,130
+    Token(9,151
+    public String toString(16,341
+
+/home/harsh/github/jlox/com/craftinginterpreters/lox/Parser.java,1303
+public class Parser 9,173
+    public static class ParseError 10,195
+    private final List<Token> tokens;12,259
+    private int current 13,297
+    private boolean repl;14,326
+    Parser(16,353
+    List<Stmt> parse(21,463
+    private Stmt declaration(29,654
+    private Stmt statement(39,887
+    private Stmt expressionStatement(49,1265
+    private Stmt printStatement(61,1598
+    private Stmt whileStatement(67,1769
+    private Stmt breakStatement(76,2052
+    private Stmt forStatement(81,2187
+    private Stmt ifStatement(139,3909
+    private List<Stmt> block(154,4324
+    private Stmt varDeclaration(165,4622
+    private Expr expression(177,4970
+    private Expr assignment(181,5038
+    private Expr or(199,5472
+    private Expr and(211,5723
+    private Expr equality(223,5994
+    private Expr comparison(233,6288
+    private Expr term(243,6584
+    private Expr factor(253,6849
+    private Expr unary(263,7114
+    private Expr primary(272,7344
+    private boolean match(295,8071
+    private boolean check(305,8296
+    private Token advance(310,8423
+    private boolean isAtEnd(315,8521
+    private Token peek(319,8595
+    private Token previous(323,8665
+    private Token consume(327,8743
+    private ParseError error(332,8892
+    private void synchronize(338,9067
+
+/home/harsh/github/jlox/com/craftinginterpreters/lox/Interpreter.java,189
+public class Interpreter 22,805
+    private Environment environment 24,885
+    public void interpret(26,947
+    public void interpret(35,1211
+    public Object visitBinaryExpr(46,1483
+
+/home/harsh/github/jlox/com/craftinginterpreters/lox/Expr.java,917
+abstract class Expr 5,63
+    interface Visitor<Visitor6,85
+    static class Binary 16,413
+        Binary(17,452
+       <R> R accept(25,637
+        final Expr left;29,739
+    static class Grouping 34,827
+        Grouping(35,868
+       <R> R accept(41,975
+        final Expr expression;45,1079
+    static class Literal 48,1117
+        Literal(49,1157
+       <R> R accept(55,1250
+        final Object value;59,1353
+    static class Logical 62,1388
+        Logical(63,1428
+       <R> R accept(71,1614
+        final Expr left;75,1717
+    static class Unary 80,1805
+        Unary(81,1843
+       <R> R accept(88,1986
+    static class Variable 96,2150
+        Variable(97,2191
+       <R> R accept(103,2281
+        final Token name;107,2385
+    static class Assign 110,2418
+        Assign(111,2457
+       <R> R accept(118,2589
+        final Token name;122,2691
+        final Expr value;123,2717
+
+/home/harsh/github/jlox/com/craftinginterpreters/lox/Stmt.java,1066
+abstract class Stmt 5,63
+    interface Visitor<Visitor6,85
+    static class Block 16,389
+        Block(17,427
+       <R> R accept(23,537
+        final List<Stmt> statements;27,638
+    static class Expression 30,682
+        Expression(31,725
+       <R> R accept(37,834
+        final Expr expression;41,940
+    static class Print 44,978
+        Print(45,1016
+       <R> R accept(51,1120
+        final Expr expression;55,1221
+    static class Var 58,1259
+        Var(59,1295
+       <R> R accept(66,1442
+        final Token name;70,1541
+        final Expr initializer;71,1567
+    static class If 74,1606
+        If(75,1641
+       <R> R accept(83,1857
+        final Expr condition;87,1955
+        final Stmt thenBranch;88,1985
+        final Stmt elseBranch;89,2016
+    static class While 92,2054
+        While(93,2092
+       <R> R accept(100,2234
+        final Expr condition;104,2335
+        final Stmt body;105,2365
+    static class Break 108,2397
+        Break(109,2435
+       <R> R accept(115,2524
+        final Void dummy;119,2625
+
+/home/harsh/github/jlox/com/craftinginterpreters/lox/Scanner.java,874
+class Scanner 8,139
+    private final String source;9,155
+    private final List<Token> tokens 10,188
+    private static final Map<Map12,247
+    private static final Map<String, TokenType> keywords;12,247
+    private int start;42,1136
+    private int current;43,1159
+    private int line;44,1184
+    Scanner(46,1207
+    List<Token> scanTokens(51,1277
+    private void scanToken(63,1505
+    private boolean isAtEnd(142,3899
+    private char advance(147,3985
+    private void addToken(152,4066
+    private void addToken(157,4151
+    private boolean match(163,4336
+    private char peek(173,4558
+    private void string(179,4669
+    private boolean isDigit(204,5180
+    private void number(209,5266
+    private char peekNext(229,5730
+    private boolean isAlpha(240,5940
+    private boolean isAlphaNumeric(247,6098
+    private void identifier(252,6195
+
+/home/harsh/github/jlox/com/craftinginterpreters/lox/TokenType.java,774
+public enum TokenType 3,39
+    LEFT_PAREN,5,95
+    RIGHT_PAREN,6,111
+    LEFT_BRACE,7,128
+    RIGHT_BRACE,8,144
+    COMMA,9,161
+    DOT,10,172
+    MINUS,11,181
+    PLUS,12,192
+    SEMICOLON,13,202
+    SLASH,14,217
+    STAR,15,228
+    BANG,18,275
+    BANG_EQUAL,19,285
+    EQUAL,20,301
+    EQUAL_EQUAL,21,312
+    GREATER,22,329
+    GREATER_EQUAL,23,342
+    LESS,24,361
+    LESS_EQUAL,25,371
+    IDENTIFIER,28,405
+    STRING,29,421
+    NUMBER,30,433
+    AND,33,463
+    CLASS,34,472
+    ELSE,35,483
+    FALSE,36,493
+    FUN,37,504
+    FOR,38,513
+    IF,39,522
+    NIL,40,530
+    OR,41,539
+    PRINT,42,547
+    RETURN,43,558
+    SUPER,44,570
+    THIS,45,581
+    TRUE,46,591
+    VAR,47,601
+    WHILE,48,610
+    BREAK,49,621
+    EOF52,645
+
+/home/harsh/github/jlox/com/craftinginterpreters/lox/Lox.java,600
+public class Lox 15,355
+    private static final Interpreter interpreter 17,375
+    static boolean hadError 19,446
+    static boolean hadRuntimeError 21,484
+    public static void main(23,529
+    private static void runFile(34,838
+    private static void runPrompt(41,1119
+    private static void runAstPrinter(54,1585
+    private static void run(62,1944
+    public static void error(75,2424
+    public static void error(79,2523
+    private static void report(87,2782
+    private static void out(92,2959
+    private static void err(96,3041
+    public static void runtimeError(100,3123
+
+/home/harsh/github/jlox/com/craftinginterpreters/lox/RuntimeError.java,84
+public class RuntimeError 3,39
+    final Token token;5,97
+    RuntimeError(7,121
+
+/home/harsh/github/jlox/com/craftinginterpreters/tool/GenerateAst.java,203
+public class GenerateAst 10,200
+    public static void main(12,228
+    private static void defineAst(41,1364
+    private static void defineVisitor(73,2341
+    private static void defineType(83,2784

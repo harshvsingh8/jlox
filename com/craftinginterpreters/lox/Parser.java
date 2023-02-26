@@ -41,6 +41,7 @@ public class Parser {
         if(match(PRINT)) return printStatement();
         if(match(WHILE)) return whileStatement();
         if(match(FOR)) return forStatement();
+        if(match(BREAK)) return breakStatement();
         if(match(LEFT_BRACE)) return new Stmt.Block(block());
         return expressionStatement();
     }
@@ -70,6 +71,11 @@ public class Parser {
         Stmt body = statement();
 
         return new Stmt.While(condition, body);
+    }
+
+    private Stmt breakStatement() {
+        consume(SEMICOLON, "Expect ';' after break.");
+        return new Stmt.Break(previous());
     }
 
     private Stmt forStatement() {

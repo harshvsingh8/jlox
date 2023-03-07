@@ -11,6 +11,7 @@ public class Parser {
 
     private final List<Token> tokens;
     private static final int maxArgListLength = 255;
+    private int anonymousFuncCounter = 0;
     private int current = 0;
     private boolean repl;
 
@@ -183,7 +184,7 @@ public class Parser {
             initializer = expression();
         }
 
-        consume(SEMICOLON, "Expect ';' after varaible declaration");
+        consume(SEMICOLON, "Expect ';' after variable declaration");
         return new Stmt.Var(name, initializer);
     }
 
@@ -323,6 +324,10 @@ public class Parser {
             return new Expr.Literal(previous().literal);
         }
 
+        if(match(FUN)) {
+            return prepareAnonFun();
+        }
+                
         if(match(IDENTIFIER)) {
             return new Expr.Variable(previous());
         }
@@ -350,6 +355,23 @@ public class Parser {
 
         Token paran = consume(RIGHT_PAREN, "Expect ')' after arguments");
         return new Expr.Call(callee, paran, arguments);
+    }
+
+    private Expr prepareAnonFun() {
+        List<Token> parameters = new ArrayList<>();
+        consume(LEFT_PAREN, "Expect '(' after fun.");
+        if(!check(RIGHT_PAREN)) {
+            do {
+                if(parameters.size() >= maxArgListLength) {
+                    error(peek(), String.format("Cannot have more than %d parameters.", maxArgListLength));
+                }
+                parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+            } while(match(COMMA));
+        }
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+        consume(LEFT_BRACE, String.format("Expect '{' before function body."));
+        List<Stmt> body = block();
+        return new Expr.AnonFun(parameters, body);
     }
     
     // Match one or more (any) tokens at the current token stream cursor.

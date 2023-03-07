@@ -11,6 +11,7 @@ abstract class Expr {
         R visitLogicalExpr(Logical expr);
         R visitUnaryExpr(Unary expr);
         R visitVariableExpr(Variable expr);
+        R visitAnonFunExpr(AnonFun expr);
         R visitAssignExpr(Assign expr);
         }
 
@@ -124,6 +125,22 @@ abstract class Expr {
         }
 
         final Token name;
+    }
+
+    static class AnonFun extends Expr {
+        AnonFun(List<Token> params, List<Stmt> body) {
+            this.params = params;
+            this.body = body;
+        }
+
+
+       @Override
+       <R> R accept(Visitor<R> visitor) {
+           return visitor.visitAnonFunExpr(this);
+        }
+
+        final List<Token> params;
+        final List<Stmt> body;
     }
 
     static class Assign extends Expr {

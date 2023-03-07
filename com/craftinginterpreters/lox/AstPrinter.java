@@ -8,6 +8,7 @@ import com.craftinginterpreters.lox.Expr.Unary;
 import com.craftinginterpreters.lox.Expr.Variable;
 import com.craftinginterpreters.lox.Expr.Logical;
 import com.craftinginterpreters.lox.Expr.Call;
+import com.craftinginterpreters.lox.Expr.AnonFun;
 
 public class AstPrinter implements Expr.Visitor<String> {
 
@@ -72,4 +73,9 @@ public class AstPrinter implements Expr.Visitor<String> {
         throw new UnsupportedOperationException("Unimplemented method 'visitCallExpr'");
     }
 
+    @Override
+    public String visitAnonFunExpr(AnonFun expr) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'visitAnonFunExpr'");
+    }
 }

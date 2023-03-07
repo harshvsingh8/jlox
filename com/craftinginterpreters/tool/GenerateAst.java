@@ -26,6 +26,7 @@ public class GenerateAst {
                 "Logical    : Expr left, Token operator, Expr right",
                 "Unary      : Token operator, Expr right",
                 "Variable   : Token name",
+                "AnonFun    : List<Token> params, List<Stmt> body",
                 "Assign     : Token name, Expr value"));
         
         defineAst(outputDir, "Stmt", Arrays.asList(

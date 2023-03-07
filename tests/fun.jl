@@ -28,5 +28,26 @@ fun makeCounter() {
 }
 
 var counter = makeCounter();
-counter();
-counter();
+// counter();
+// counter();
+
+fun thrice(fn,Md) {
+    for(var i =1; i <= 3; i = i + 1) {
+	fn(Md(i));
+    }
+}
+
+// fun printme(a) {
+//     print a;
+// }
+
+thrice(
+    fun (a) {
+	print a;
+    },
+    fun (x) {
+	return x*x;
+    });
+
+// thrice(printme);
+

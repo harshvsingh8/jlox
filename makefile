@@ -21,7 +21,11 @@ SRCS := $(SRC_DIR)/TokenType.java \
 	$(SRC_DIR)/Interpreter.java \
 	$(SRC_DIR)/RuntimeError.java \
 	$(SRC_DIR)/Stmt.java \
-	$(SRC_DIR)/Environment.java
+	$(SRC_DIR)/Environment.java \
+	$(SRC_DIR)/LoxCallable.java \
+	$(SRC_DIR)/LoxFunction.java \
+	$(SRC_DIR)/Return.java \
+	$(SRC_DIR)/Globals.java
 
 ##
 # classes

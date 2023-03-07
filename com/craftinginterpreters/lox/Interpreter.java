@@ -7,6 +7,7 @@ import com.craftinginterpreters.lox.Expr.Literal;
 import com.craftinginterpreters.lox.Expr.Unary;
 import com.craftinginterpreters.lox.Expr.Variable;
 import com.craftinginterpreters.lox.Expr.Logical;
+import com.craftinginterpreters.lox.Expr.Call;
 import com.craftinginterpreters.lox.Stmt.Block;
 import com.craftinginterpreters.lox.Stmt.Expression;
 import com.craftinginterpreters.lox.Stmt.Print;
@@ -14,17 +15,25 @@ import com.craftinginterpreters.lox.Stmt.Var;
 import com.craftinginterpreters.lox.Stmt.If;
 import com.craftinginterpreters.lox.Stmt.While;
 import com.craftinginterpreters.lox.Stmt.Break;
+import com.craftinginterpreters.lox.Stmt.Function;
 
 import static com.craftinginterpreters.lox.TokenType.*;
 
 import java.util.List;
+import java.util.ArrayList;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     private static class LoopExitJump extends RuntimeException {}
+
+    final Environment globals = new Environment();
+    private Environment environment = globals;
     
-    private Environment environment = new Environment();
     private int loopDepth = 0;
+
+    public Interpreter() {
+        Globals.defineNativeFunctions(globals);
+    }
     
     public void interpret(Expr expression) {
         try {
@@ -254,6 +263,46 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
 
         throw new LoopExitJump();
+    }
+
+    @Override
+    public Object visitCallExpr(Call expr) {
+        Object callee = evaluate(expr.callee);
+
+        List<Object> arguments = new ArrayList<>();
+        for(Expr argument : expr.arguments) {
+            arguments.add(evaluate(argument));
+        }
+
+        if(!(callee instanceof LoxCallable)) {
+            throw new RuntimeError(expr.paren, "Can only expr functions and classes");
+        }
+        
+        LoxCallable function = (LoxCallable)callee;
+
+        if(arguments.size() != function.arity()) {
+            throw new RuntimeError(expr.paren,
+                                   String.format("Expected %d arguments but got %d.",
+                                                 function.arity(),
+                                                 arguments.size()));
+        }
+        return function.call(this, arguments);
+    }
+
+    @Override
+    public Void visitFunctionStmt(Function stmt) {
+        LoxFunction function = new LoxFunction(stmt, environment);
+        environment.define(stmt.name.lexeme, function);
+        return null;
+    }
+
+    @Override
+    public Void visitReturnStmt(Stmt.Return stmt) {
+        Object value = null;
+        if(stmt.value != null) {
+            value = evaluate(stmt.value);
+        }
+        throw new Return(value);
     }
     
     void executeBlock(List<Stmt> statements,

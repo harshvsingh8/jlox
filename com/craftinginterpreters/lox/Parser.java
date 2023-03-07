@@ -11,7 +11,6 @@ public class Parser {
 
     private final List<Token> tokens;
     private static final int maxArgListLength = 255;
-    private int anonymousFuncCounter = 0;
     private int current = 0;
     private boolean repl;
 
@@ -371,6 +370,8 @@ public class Parser {
         consume(RIGHT_PAREN, "Expect ')' after parameters.");
         consume(LEFT_BRACE, String.format("Expect '{' before function body."));
         List<Stmt> body = block();
+
+        // TODO - internal name can be added (auto-incremented ones) to anonymous function.
         return new Expr.AnonFun(parameters, body);
     }
     

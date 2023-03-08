@@ -22,6 +22,8 @@ import static com.craftinginterpreters.lox.TokenType.*;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
@@ -29,7 +31,9 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     final Environment globals = new Environment();
     private Environment environment = globals;
-    
+    private final Map<Expr, Integer> locals = new HashMap<>();
+
+    // TODO - it looks ugly.
     private int loopDepth = 0;
 
     public Interpreter() {
@@ -53,6 +57,11 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         } catch (RuntimeError error)    {
             Lox.runtimeError(error);
         }
+    }
+
+    // Method to set aside the scope (outer) depth to its environment (where it is bound).
+    public void resolve(Expr varExpr, int depth) {
+        locals.put(varExpr, depth);
     }
 
     @Override
@@ -246,13 +255,23 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Object visitVariableExpr(Variable expr) {
-        return environment.get(expr.name);
+        // This node is a variable's usages point - we need to lookup it in this bound environment.
+        // The bound environment is resolved and set aside as the outer scope skip length in the
+        // previous semantic analysis (resolver) pass. 
+        return lookUpVariable(expr.name, expr);
     }
 
     @Override
     public Object visitAssignExpr(Assign expr) {
         Object value = evaluate(expr.value);
-        environment.assign(expr.name, value);
+        Integer distance = locals.get(expr);
+        if(distance != null) {
+            environment.assignAt(distance, expr.name, value);
+        } else {
+            // If the variable is not bound in the local stack of scopes
+            // put it in the global scope.
+            globals.assign(expr.name, value);
+        }
         return value;
     }
 
@@ -281,7 +300,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
 
         if(!(callee instanceof LoxCallable)) {
-            throw new RuntimeError(expr.paren, "Can only expr functions and classes");
+            throw new RuntimeError(expr.paren, "Can only expr functions and classes.");
         }
         
         LoxCallable function = (LoxCallable)callee;
@@ -310,7 +329,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         }
         throw new Return(value);
     }
-    
+
     void executeBlock(List<Stmt> statements,
                       Environment environment) {
         Environment previous = this.environment;
@@ -322,6 +341,16 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             }
         } finally {
             this.environment = previous;
+        }
+    }
+
+    private Object lookUpVariable(Token name, Expr expr) {
+        Integer distance = locals.get(expr);
+        // System.out.println("Looking " + name.lexeme + "@" + expr.hashCode() + " at distance:" + distance);
+        if(distance != null) {
+            return environment.getAt(distance, name.lexeme);
+        } else {
+            return globals.get(name);
         }
     }
 }

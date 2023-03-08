@@ -1,3 +1,9 @@
+fun function(x) {
+    print x;
+    return x;
+}
+
+print function(3);
 
 fun fib(n) {
     var x = 1;
@@ -11,12 +17,16 @@ fun fib(n) {
     }
 }
 
+fib(10);
+
 fun fact(x) {
  if(x == 1)
       return 1;
  else
       return x * fact(x-1);
 }
+
+print fact(5);
 
 fun makeCounter() {
     var i = 0;
@@ -28,26 +38,19 @@ fun makeCounter() {
 }
 
 var counter = makeCounter();
-// counter();
-// counter();
+counter();
+counter();
 
-fun thrice(fn,Md) {
-    for(var i =1; i <= 3; i = i + 1) {
-	fn(Md(i));
-    }
+fun thrice(apply, modifier) {
+     for(var i =1; i <= 3; i = i + 1) {
+ 	apply(modifier(i));
+     }
 }
-
-// fun printme(a) {
-//     print a;
-// }
 
 thrice(
     fun (a) {
-	print a;
+	print clock();
     },
     fun (x) {
-	return x*x;
+	return x*x*x;
     });
-
-// thrice(printme);
-

@@ -62,9 +62,18 @@ public class Lox {
     private static void run(String source, boolean repl) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
+
         Parser parser = new Parser(tokens, repl);
         List<Stmt> statements = parser.parse();
+
         if(hadError) return;
+
+        // Semantic analysis pass (for resolver)
+        Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+
+        if(hadError) return;
+
         interpreter.interpret(statements);
             
         // Prints the AST tree.

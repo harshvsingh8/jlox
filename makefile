@@ -26,7 +26,9 @@ SRCS := $(SRC_DIR)/TokenType.java \
 	$(SRC_DIR)/LoxFunction.java \
 	$(SRC_DIR)/Return.java \
 	$(SRC_DIR)/Globals.java \
-	$(SRC_DIR)/Resolver.java 
+	$(SRC_DIR)/Resolver.java \
+	$(SRC_DIR)/LoxClass.java \
+	$(SRC_DIR)/LoxInstance.java 
 
 ##
 # classes

@@ -29,6 +29,7 @@ public class Parser {
 
     private Stmt declaration() {
         try {
+            if(match(CLASS)) return classDeclaration();
             if(match(FUN)) return funDeclaration("function");
             if(match(VAR)) return varDeclaration();
             return statement();
@@ -187,7 +188,7 @@ public class Parser {
         return new Stmt.Var(name, initializer);
     }
 
-    private Stmt funDeclaration(String kind) {
+    private Stmt.Function funDeclaration(String kind) {
         Token name = consume(IDENTIFIER, String.format("Expect %s name.", kind));
         consume(LEFT_PAREN, String.format("Expect '(' after %s name.", kind));
         List<Token> parameters = new ArrayList<>();
@@ -204,6 +205,19 @@ public class Parser {
         List<Stmt> body = block();
         return new Stmt.Function(name, parameters, body);
     }
+
+    private Stmt classDeclaration() {
+        Token name = consume(IDENTIFIER, "Expect class name.");
+        consume(LEFT_BRACE, "Expect '{' before class body.");
+
+        List<Stmt.Function> methods = new ArrayList<>();
+        while(!check(RIGHT_BRACE) && !isAtEnd()) {
+            methods.add(funDeclaration("method"));
+        }
+
+        consume(RIGHT_BRACE, "Expect '}' after class body.");
+        return new Stmt.Class(name, methods);
+    }
     
     private Expr expression() {
         return assignment();
@@ -219,6 +233,10 @@ public class Parser {
             if(expr instanceof Expr.Variable) {
                 Token name = ((Expr.Variable)expr).name;
                 return new Expr.Assign(name, value);
+            } if(expr instanceof Expr.Get) {
+                // set's l-value is parsed as Expr.Get - we will repurpose.
+                Expr.Get get = (Expr.Get)expr;
+                return new Expr.Set(get.object, get.name, value);
             }
 
             error(equals, "Invalid assignment target.");
@@ -306,7 +324,10 @@ public class Parser {
         while(true) {
             if(match(LEFT_PAREN)) {
                 expr = finishCall(expr);
-            } else {
+            } if(match(DOT)) {
+                Token name = consume(IDENTIFIER, "Expect a propertry name after '.'.");
+                expr = new Expr.Get(expr, name);
+            }else {
                 break;
             }
         }
@@ -318,7 +339,7 @@ public class Parser {
         if(match(FALSE)) return new Expr.Literal(false);
         if(match(TRUE)) return new Expr.Literal(true);
         if(match(NIL)) return new Expr.Literal(null);
-
+        
         if(match(NUMBER, STRING)) {
             return new Expr.Literal(previous().literal);
         }
@@ -326,7 +347,11 @@ public class Parser {
         if(match(FUN)) {
             return prepareAnonFun();
         }
-                
+
+        if(match(THIS)) {
+            return new Expr.This(previous());
+        }
+        
         if(match(IDENTIFIER)) {
             return new Expr.Variable(previous());
         }

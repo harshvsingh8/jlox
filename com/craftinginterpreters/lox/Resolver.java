@@ -16,10 +16,14 @@ import com.craftinginterpreters.lox.Expr.Literal;
 import com.craftinginterpreters.lox.Expr.Logical;
 import com.craftinginterpreters.lox.Expr.Unary;
 import com.craftinginterpreters.lox.Expr.Variable;
+import com.craftinginterpreters.lox.Expr.Get;
+import com.craftinginterpreters.lox.Expr.Set;
+import com.craftinginterpreters.lox.Expr.This;
 import com.craftinginterpreters.lox.Stmt.Block;
 import com.craftinginterpreters.lox.Stmt.Break;
 import com.craftinginterpreters.lox.Stmt.Expression;
 import com.craftinginterpreters.lox.Stmt.Function;
+import com.craftinginterpreters.lox.Stmt.Class;
 import com.craftinginterpreters.lox.Stmt.If;
 import com.craftinginterpreters.lox.Stmt.Print;
 import com.craftinginterpreters.lox.Stmt.Return;
@@ -32,15 +36,24 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     private final Interpreter interpreter;
     private final Stack<Map<String, Boolean>> scopes = new Stack<>();
+
+    private ClassType currentClass = ClassType.NONE;
     private FunctionType currentFunction = FunctionType.NONE;
     
     public Resolver(Interpreter interpreter) {
 	this.interpreter = interpreter;
     }
 
+    private enum ClassType {
+        NONE,
+        CLASS
+    }
+    
     private enum FunctionType {
         NONE,
-        FUNCTION
+        FUNCTION,
+        INITIALIZER,
+        METHOD
     }
 
     void resolve(List<Stmt> statements) {
@@ -76,7 +89,32 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         declare(stmt.name);
         // define immediately as it should be valid (to support recursion).
         define(stmt.name);
-        resolveFunction(stmt);
+        resolveFunction(stmt, FunctionType.FUNCTION);
+        return null;
+    }
+
+    @Override
+    public Void visitClassStmt(Class stmt) {
+        ClassType enclosingClass = currentClass;
+        currentClass = ClassType.CLASS;
+        
+        declare(stmt.name);
+        define(stmt.name);
+
+        // Create a new environment scope and put "this" in that.
+        beginScope();
+        scopes.peek().put("this", true /* defined */);
+
+        for(Stmt.Function method : stmt.methods) {
+            FunctionType funcType = FunctionType.METHOD;
+            if(method.name.lexeme.equals("init")) {
+                funcType = FunctionType.INITIALIZER;
+            }
+            resolveFunction(method, funcType);
+        }
+
+        endScope();
+        currentClass = enclosingClass;
         return null;
     }
 
@@ -100,6 +138,9 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     public Void visitReturnStmt(Return stmt) {
         if(currentFunction == FunctionType.NONE) {
             Lox.error(stmt.keyword, "Cannot return form top-level code.");
+        }
+        if(currentFunction == FunctionType.INITIALIZER && stmt.value != null) {
+            Lox.error(stmt.keyword, "Cannot return a value from an initializer.");
         }
         if(stmt.value != null) {
             resolve(stmt.value);
@@ -148,6 +189,30 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         return null;
     }
 
+    @Override
+    public Void visitGetExpr(Get expr) {
+        resolve(expr.object);
+        return null;
+    }
+
+    @Override
+    public Void visitSetExpr(Set expr) {
+        resolve(expr.value);
+        resolve(expr.object);
+        return null;
+    }
+
+    @Override
+    public Void visitThisExpr(This expr) {
+        // Check validity of the placement of "this" expression.
+        if(currentClass == ClassType.NONE) {
+            Lox.error(expr.keyword, "Can't use 'this' outside of a class.");
+        }
+        
+        resolveLocal(expr, expr.keyword);
+        return null;
+    }
+    
     @Override
     public Void visitGroupingExpr(Grouping expr) {
         resolve(expr.expression);
@@ -237,16 +302,14 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             if(scopes.get(i).containsKey(name.lexeme)) {
                 interpreter.resolve(expr /* variable usages node */,
                                     scopes.size() - 1 - i /* steps outside in the outer scopes */);
-                // System.out.println("resolveLocal:" + name.lexeme + "@" + expr.hashCode()  + " at scope-distance:" + (scopes.size()-1-i));
                 return;
             }
         }
-        // System.out.println("resolveLocal:" + name.lexeme + " skipped for the global scope");
     }
 
-    private void resolveFunction(Function function) {
+    private void resolveFunction(Function function, FunctionType type) {
         FunctionType enclosingFunctionType = currentFunction;
-        currentFunction = FunctionType.FUNCTION;
+        currentFunction = type;
         // Entering the function starts a new scope.
         beginScope();
         for(Token param : function.params) {

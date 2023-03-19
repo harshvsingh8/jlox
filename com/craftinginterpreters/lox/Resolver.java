@@ -19,6 +19,7 @@ import com.craftinginterpreters.lox.Expr.Variable;
 import com.craftinginterpreters.lox.Expr.Get;
 import com.craftinginterpreters.lox.Expr.Set;
 import com.craftinginterpreters.lox.Expr.This;
+import com.craftinginterpreters.lox.Expr.Super;
 import com.craftinginterpreters.lox.Stmt.Block;
 import com.craftinginterpreters.lox.Stmt.Break;
 import com.craftinginterpreters.lox.Stmt.Expression;
@@ -46,7 +47,8 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     private enum ClassType {
         NONE,
-        CLASS
+        CLASS,
+        SUBCLASS
     }
     
     private enum FunctionType {
@@ -101,6 +103,22 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         declare(stmt.name);
         define(stmt.name);
 
+        if(stmt.superClass != null
+           && stmt.name.lexeme.equals(stmt.superClass.name.lexeme)) {
+            Lox.error(stmt.superClass.name, "A class cannot inherit itself.");
+        }
+        
+        if(stmt.superClass != null) {
+            currentClass = ClassType.SUBCLASS;
+            resolve(stmt.superClass);
+        }
+
+        // Wrap a new environment scope for super class.
+        if(stmt.superClass != null) {
+            beginScope();
+            scopes.peek().put("super", true /* defined */);
+        }
+        
         // Create a new environment scope and put "this" in that.
         beginScope();
         scopes.peek().put("this", true /* defined */);
@@ -113,7 +131,14 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
             resolveFunction(method, funcType);
         }
 
+        // the end of the scope for "this" 
         endScope();
+
+        // the end of the scope for super class.
+        if(stmt.superClass != null) {
+            endScope();
+        }
+        
         currentClass = enclosingClass;
         return null;
     }
@@ -207,6 +232,18 @@ public class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         // Check validity of the placement of "this" expression.
         if(currentClass == ClassType.NONE) {
             Lox.error(expr.keyword, "Can't use 'this' outside of a class.");
+        }
+        
+        resolveLocal(expr, expr.keyword);
+        return null;
+    }
+
+    @Override
+    public Void visitSuperExpr(Super expr) {
+        if(currentClass == ClassType.NONE) {
+            Lox.error(expr.keyword, "Cannot use 'super' outside of a class.");
+        } else if(currentClass != ClassType.SUBCLASS) {
+            Lox.error(expr.keyword, "Cannot use 'super' in a class without a superclass.");
         }
         
         resolveLocal(expr, expr.keyword);

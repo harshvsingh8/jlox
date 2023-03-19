@@ -34,6 +34,10 @@ class Environment {
     Object getAt(int distance, String name) {
         return ancestor(distance).values.get(name);
     }
+
+    Environment getEnclosing() {
+        return this.enclosing;
+    }
     
     void assign(Token name, Object value) {
         if(values.containsKey(name.lexeme)) {

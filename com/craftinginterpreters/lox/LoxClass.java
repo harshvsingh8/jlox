@@ -5,10 +5,14 @@ import java.util.Map;
 
 class LoxClass implements LoxCallable {
     final String name;
+    final LoxClass superClass;
     final Map<String, LoxFunction> methods;
 
-    LoxClass(String name, Map<String, LoxFunction> methods) {
+    LoxClass(String name,
+             LoxClass superClass,
+             Map<String, LoxFunction> methods) {
 	this.name = name;
+        this.superClass = superClass;
         this.methods = methods;
     }
 
@@ -18,11 +22,8 @@ class LoxClass implements LoxCallable {
         LoxInstance instance = new LoxInstance(this);
         LoxFunction initializer = findMethod("init");
         if(initializer != null) {
-            // System.out.println("Found init");
             // binds and call the init (constructor) immediately.
             initializer.bind(instance).call(interpreter, arguments);
-        } else {
-            // System.out.println("init not found");
         }
         return instance;
     }
@@ -41,6 +42,10 @@ class LoxClass implements LoxCallable {
             return methods.get(name);
         }
 
+        if(superClass != null) {
+            return superClass.findMethod(name);
+        }
+        
         return null;
     }
                 

@@ -10,6 +10,7 @@ public enum TokenType {
     DOT,
     MINUS,
     PLUS,
+    COLON,
     SEMICOLON,
     SLASH,
     STAR,

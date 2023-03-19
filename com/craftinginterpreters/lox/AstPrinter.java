@@ -12,6 +12,7 @@ import com.craftinginterpreters.lox.Expr.AnonFun;
 import com.craftinginterpreters.lox.Expr.Get;
 import com.craftinginterpreters.lox.Expr.Set;
 import com.craftinginterpreters.lox.Expr.This;
+import com.craftinginterpreters.lox.Expr.Super;
 
 public class AstPrinter implements Expr.Visitor<String> {
 
@@ -98,4 +99,10 @@ public class AstPrinter implements Expr.Visitor<String> {
     public String visitThisExpr(This expr) {
         throw new UnsupportedOperationException("Unimplemented method 'visitThisExpr'");
     }
+
+    @Override
+    public String visitSuperExpr(Super expr) {
+        throw new UnsupportedOperationException("Unimplemented method 'visitSuperExpr'");
+    }
 }
+
